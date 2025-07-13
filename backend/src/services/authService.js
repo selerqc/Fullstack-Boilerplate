@@ -1,23 +1,36 @@
 
 import UserModel from '../models/userModel.js'
-import ApiError from '../utils/ApiError.js'
 import { StatusCodes } from 'http-status-codes'
 import Token from '../models/tokenModel.js'
-import initializePassport from '../auth/passportAuth.js'
+import { generateAuthToken } from './tokenService.js';
+
 export default {
-  async loginUserWithEmailAndPassword(userData) {
+  async login(userData) {
+    console.log(userData)
     try {
-      const user = initializePassport.a
+      const token = await generateAuthToken(userData)
+
+      return {
+        success: true,
+        message: "Login Successful",
+        data: {
+          token,
+          user: userData
+        }
+      }
     } catch (error) {
-      return error
+      return {
+        success: false,
+        message: "Login failed",
+        error: error.message
+      }
     }
   },
 
   async logout(refreshToken) {
-    const refreshTokenDoc = await Token.findOne({ token: refreshToken, type: "REFRESH", blacklisted: false });
-    if (!refreshTokenDoc) {
-      throw new ApiError(StatusCodes.NOT_FOUND, 'Not found');
-    }
+    const refreshTokenDoc = await Token.findOne({ token: refreshToken, type: "REFRESH", blacklisted: true });
+    if (!refreshTokenDoc) throw new Error('Not found');
+    
     await refreshTokenDoc.remove();
   }
 }

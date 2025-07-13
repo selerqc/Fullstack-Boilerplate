@@ -1,9 +1,8 @@
 import config from '../config/config.js'
-import { StatusCodes } from 'http-status-codes'
 import jwt from 'jsonwebtoken'
 import moment from 'moment'
 import TokenModel from "../models/tokenModel.js"
-import ApiError from '../utils/ApiError.js'
+
 
 const generateToken = (userId, expires, type, secret = config.jwt.JWT_SECRET) => {
   const payload = {
@@ -30,16 +29,16 @@ const verifyToken = async (token, type) => {
   const payload = jwt.verify(token, config.jwt.JWT_SECRET);
   const tokenDoc = await TokenModel.findOne({ token, type, user: payload.sub, blacklisted: false });
   if (!tokenDoc) {
-    throw new ApiError(StatusCodes.UNAUTHORIZED, 'Token not found');
+    throw new Error('Token not found');
   }
   return tokenDoc;
 };
 
 const generateAuthToken = async (user) => {
-  const accessTokenExpires = moment().add(config.jwt.JWT_EXPIRATION);
+  const accessTokenExpires = moment().add(1, 'hour'); // 1 hour from now
   const accessToken = generateToken(user._id, accessTokenExpires, "ACCESS");
 
-  const refreshTokenExpires = moment().add(config.jwt.JWT_REFRESH_EXPIRATION);
+  const refreshTokenExpires = moment().add(7, 'days'); // 7 days from now
   const refreshToken = generateToken(user._id, refreshTokenExpires, "REFRESH");
   await saveToken(refreshToken, user._id, refreshTokenExpires, "REFRESH");
 

@@ -5,8 +5,6 @@ import { StatusCodes } from 'http-status-codes'
 import { ExtractJwt, Strategy as JwtStrategy } from 'passport-jwt'
 import config from '../config/config.js'
 
-
-
 const opts = {
   jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
   secretOrKey: config.jwt.JWT_SECRET,
@@ -31,7 +29,6 @@ export default {
       }
     }
 
-
     passport.use('local', new LocalStrategy({ usernameField: 'email', passwordField: 'password' }, authenticateUser))
 
     passport.serializeUser((user, done) => {
@@ -48,12 +45,10 @@ export default {
 
         done(null, user);
       } catch (err) {
-
         return done(err);
       }
     });
   },
-
 
   initializeJwtPassport(passport) {
     const jwtVerify = async (payload, done) => {
@@ -72,7 +67,4 @@ export default {
 
     passport.use(new JwtStrategy(opts, jwtVerify))
   },
-
-
-
 }
